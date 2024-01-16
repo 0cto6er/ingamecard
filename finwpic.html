@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Генератор изображений</title>
+    <style>
+        #canvasContainer {
+            position: relative;
+        }
+        .textInput {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+        }
+        #userInput2 {
+            position: absolute;
+            top: 40px;
+            left: 10px;
+        }
+        #userInput3 {
+            position: absolute;
+            top: 70px;
+            left: 10px;
+        }
+        #userInput4 {
+            position: absolute;
+            top: 100px;
+            left: 10px;
+        }
+        #userImageInput {
+            position: absolute;
+            top: 10px;
+            left: 200px;
+        }
+        #downloadBtn {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="canvasContainer">
+        <img id="baseImage" src="https://i.imgur.com/SojvHn6.png" width="700" height="459">
+        <canvas id="imageCanvas" width="700" height="459"></canvas>
+        <input type="text" class="textInput" id="userInput1" placeholder="University of Los Santos, San Andreas">
+        <input type="text" class="textInput" id="userInput2" placeholder="Full Name">
+        <input type="text" class="textInput" id="userInput3" placeholder="Date of Birth">
+        <input type="text" class="textInput" id="userInput4" placeholder="Card Number">
+        <input type="file" id="userImageInput" accept="image/*">
+        <button id="downloadBtn" onclick="downloadImage()">Скачать изображение</button>
+    </div>
+
+    <script>
+        const baseImage = document.getElementById('baseImage');
+        const canvas = document.getElementById('imageCanvas');
+        const ctx = canvas.getContext('2d');
+        const userInput1 = document.getElementById('userInput1');
+        const userInput2 = document.getElementById('userInput2');
+        const userInput3 = document.getElementById('userInput3');
+        const userInput4 = document.getElementById('userInput4');
+        const userImageInput = document.getElementById('userImageInput');
+
+        function drawImage() {
+            // Отрисовываем базовое изображение
+            ctx.drawImage(baseImage, 0, 0, canvas.width, canvas.height);
+
+            // Рисуем текст поверх изображения
+            ctx.fillStyle = '#000';
+            ctx.font = '19px Arial';
+            
+            // Рисуем текст из первого поля ввода
+            ctx.fillText(userInput1.value, 43, 251);
+
+            // Рисуем текст из второго поля ввода
+            ctx.fillText(userInput2.value, 43, 303);
+
+            // Рисуем текст из третьего поля ввода
+            ctx.fillText(userInput3.value, 43, 355);
+
+            // Рисуем текст из четвертого поля ввода
+            ctx.fillText(userInput4.value, 505, 58);
+
+            // Рисуем текущую дату в определенных координатах
+            const currentDate = new Date();
+            const formattedDate = formatDate(currentDate);
+            ctx.fillText(formattedDate, 43, 407); // Заданные координаты для даты
+
+            // Рисуем пользовательское изображение
+            if (userImageInput.files.length > 0) {
+                const userImage = new Image();
+                userImage.onload = function() {
+                    // Рисуем пользовательское изображение в заданных координатах
+                    ctx.drawImage(userImage, 447, 73, 200, 230);
+                };
+                userImage.src = URL.createObjectURL(userImageInput.files[0]);
+            }
+        }
+
+        function downloadImage() {
+            drawImage();
+
+            // Получаем данные изображения в base64
+            const imageData = canvas.toDataURL('image/png');
+
+            // Преобразуем данные в Blob
+            const blob = dataURItoBlob(imageData);
+
+            // Создаем ссылку для скачивания
+            const downloadLink = document.createElement('a');
+            downloadLink.href = URL.createObjectURL(blob);
+            downloadLink.download = 'generated_image.png';
+
+            // Добавляем элемент в DOM и эмулируем клик
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+
+            // Очищаем ссылку после скачивания
+            URL.revokeObjectURL(downloadLink.href);
+            document.body.removeChild(downloadLink);
+        }
+
+        // Функция для форматирования даты в виде "DD/MM/YYYY"
+        function formatDate(date) {
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}/${month}/${year}`;
+        }
+
+        // Обновляем изображение при изменении ввода пользователя
+        userInput1.addEventListener('input', drawImage);
+        userInput2.addEventListener('input', drawImage);
+        userInput3.addEventListener('input', drawImage);
+        userInput4.addEventListener('input', drawImage);
+        userImageInput.addEventListener('change', drawImage);
+
+        // Инициализация при загрузке страницы
+        drawImage();
+    </script>
+</body>
+</html>
